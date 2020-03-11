@@ -28,9 +28,9 @@ class MultiAircraftEnv(gym.Env):
     """
 
     def __init__(self, sd, debug=False):
-        self.load_config()
-        self.load_vertiport()
-        self.load_sectors()
+        self.load_config()  # read parameters from config file
+        self.load_vertiports()  # set vertiports
+        self.load_sectors()  # set sectors
         self.state = None
         self.viewer = None
 
@@ -42,12 +42,10 @@ class MultiAircraftEnv(gym.Env):
             dtype=np.float32)
         self.action_space = spaces.Tuple((spaces.Discrete(3),) * self.num_aircraft)
 
-        self.total_timesteps = 0
+        self.total_timesteps = 0  # total time steps in seconds
 
-        self.conflicts = 0
-        self.conflict_flag = None
-        self.distance_mat = None
-        self.seed(sd)
+        self.conflicts = 0  # number of conflicts (LOS)
+        self.seed(sd)  # set seed
 
         self.debug = debug
 
@@ -58,77 +56,48 @@ class MultiAircraftEnv(gym.Env):
         return [seed]
 
     def load_config(self):
-        # input dim
+        # load parameters from config file
         self.window_width = Config.window_width
         self.window_height = Config.window_height
         self.num_aircraft = Config.num_aircraft
         self.EPISODES = Config.EPISODES
         self.G = Config.G
         self.tick = Config.tick
-        self.scale = Config.scale
-        self.minimum_separation = Config.minimum_separation
-        self.NMAC_dist = Config.NMAC_dist
+        self.scale = Config.scale  # scale: 1 pixel = ? meters in real world
+        self.minimum_separation = Config.minimum_separation  # LOS standard: 0.3 nmi
+        self.NMAC_dist = Config.NMAC_dist  # NMAC standard: 500 ft
         self.horizon_dist = Config.horizon_dist
-        self.initial_min_dist = Config.initial_min_dist
+        self.initial_min_dist = Config.initial_min_dist  # newly added aircraft should not be too close to existing aircraft
         self.goal_radius = Config.goal_radius
-        self.init_speed = Config.init_speed
+        self.init_speed = Config.init_speed  # cruise speed of the aircraft
         self.min_speed = Config.min_speed
         self.max_speed = Config.max_speed
 
-    def load_vertiport(self):
+    def load_vertiports(self):
+        # load vertiports based on locations in config file
         self.vertiport_list = []
         for i in range(Config.vertiport_loc.shape[0]):
             self.vertiport_list.append(VertiPort(id=i, position=Config.vertiport_loc[i]))
 
     def load_sectors(self):
+        # load sectors based on locations in config file
         self.sectors = []
-        self.sector_vertices = []
         for i in range(7):
             self.sectors.append(Sector(i, Config.sector_vertices[i]))
 
     def reset(self):
-        # aircraft is stored in this list
         self.aircraft_dict = AircraftDict()
         self.id_tracker = 0
 
         self.conflicts = 0
         self.goals = 0
         self.NMACs = 0
-
-        return self._get_ob()
-
-    def pressure_reset(self):
-        # aircraft is stored in this dict
-        self.aircraft_dict = AircraftDict()
-        self.id_tracker = 0
-        self.conflicts = 0
-        self.goals = 0
-        self.NMACs = 0
-
-        for id in range(self.num_aircraft):
-            theta = 2 * id * math.pi / self.num_aircraft
-            r = self.window_width / 2 - 10
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
-            position = (self.window_width / 2 + x, self.window_height / 2 + y)
-            goal_pos = (self.window_width / 2 - x, self.window_height / 2 - y)
-
-            aircraft = Aircraft(
-                id=id,
-                position=position,
-                speed=self.init_speed,
-                heading=theta + math.pi,
-                goal_pos=goal_pos,
-                goal_vertiport_id=-1
-            )
-
-            self.aircraft_dict.add(aircraft)
 
         return self._get_ob()
 
     def _get_ob(self):
-        ob = {}  # key: sector, item: [aircraft_info, id]
-        for i in range(7):
+        ob = {}  # dict: {sector_id: [aircraft_info, id]}
+        for i in range(7):  # loop over all sectors
             s = []
             id = []
             goal_exit_id = []
@@ -148,22 +117,8 @@ class MultiAircraftEnv(gym.Env):
 
                 goal_exit_id.append(aircraft.goal_exit_id)
 
-            # for aircraft_id in list(self.sectors[i].exited_aircraft_id.keys()):
-            #     aircraft = self.aircraft_dict.get_aircraft_by_id(aircraft_id)
-            #     s.append(aircraft.position[0] + np.random.normal(0, position_sigma))
-            #     s.append(aircraft.position[1] + np.random.normal(0, position_sigma))
-            #     s.append(aircraft.velocity[0] + np.random.normal(0, speed_sigma))
-            #     s.append(aircraft.velocity[1] + np.random.normal(0, speed_sigma))
-            #     s.append(aircraft.speed)
-            #     s.append(aircraft.heading)
-            #     s.append(aircraft.sub_goal.position[0])
-            #     s.append(aircraft.sub_goal.position[1])
-            #
-            #     self.sectors[i].exited_aircraft_id[aircraft_id] += 1
-            #     if self.sectors[i].exited_aircraft_id[aircraft_id] > 10:
-            #         del self.sectors[i].exited_aircraft_id[aircraft_id]
-
             current_sector = self.sectors[i]
+            # add aircraft information close to current sector
             for sector in self.sectors:
                 if not sector.id == i:
                     for aircraft_id in sector.controlled_aircraft_id:
@@ -187,7 +142,7 @@ class MultiAircraftEnv(gym.Env):
         return ob
 
     def step(self, a, near_end=False):
-        # a is a dictionary: {id, action, ...}
+        # a is a dictionary: {id: action, ...}
         for id, aircraft in self.aircraft_dict.ac_dict.items():
             try:
                 aircraft.step(a[id])
@@ -195,7 +150,7 @@ class MultiAircraftEnv(gym.Env):
                 aircraft.step()
 
         for vertiport in self.vertiport_list:
-            vertiport.step()
+            vertiport.step()  # add the vertiport clock by 1
             if vertiport.clock_counter >= vertiport.time_next_aircraft and not near_end:
                 goal_vertiport_id = random.choice([e for e in range(len(self.vertiport_list)) if not e == vertiport.id])
                 aircraft = Aircraft(
@@ -210,6 +165,7 @@ class MultiAircraftEnv(gym.Env):
                 dist_array, id_array = self.dist_to_all_aircraft(aircraft)
                 min_dist = min(dist_array) if dist_array.shape[0] > 0 else 9999
                 if min_dist > Config.start_safe_dist:
+                    # add aircraft only when it is safe
                     self.aircraft_dict.add(aircraft)
                     self.id_tracker += 1
 
@@ -224,6 +180,9 @@ class MultiAircraftEnv(gym.Env):
         return self._get_ob(), reward, terminal, info
 
     def assign_sector(self):
+        """
+        based on the aircraft location, change its sector id to the current sector
+        """
         for id, aircraft in self.aircraft_dict.ac_dict.items():
             for sector in self.sectors:
                 if sector.in_sector(aircraft.position):
@@ -251,7 +210,6 @@ class MultiAircraftEnv(gym.Env):
            else return the corresponding reward and not terminate
         """
         reward = 0
-        # info = {'n': [], 'c': [], 'w': [], 'g': []}
         info_dist_dict = {}
         aircraft_to_remove = []  # add goal-aircraft and out-of-map aircraft to this list
 
@@ -278,7 +236,6 @@ class MultiAircraftEnv(gym.Env):
                     if id2 not in aircraft.conflict_id_set:
                         self.conflicts += 1
                         aircraft.conflict_id_set.add(id2)
-                        # info['c'].append('%d and %d' % (aircraft.id, id))
                     aircraft.reward = Config.conflict_penalty
 
             # if NMAC, set penalty reward and prepare to remove the aircraft from list
@@ -287,7 +244,6 @@ class MultiAircraftEnv(gym.Env):
                     self.render()
                     import ipdb
                     ipdb.set_trace()
-                # info['n'].append('%d and %d' % (aircraft.id, close_id))
                 aircraft.reward = Config.NMAC_penalty
                 aircraft_to_remove.append(aircraft)
                 self.NMACs += 1
@@ -303,7 +259,6 @@ class MultiAircraftEnv(gym.Env):
             # set goal-aircraft reward according to simulator, prepare to remove it
             elif dist_goal < self.goal_radius:
                 aircraft.reward = Config.goal_reward
-                # info['g'].append(aircraft.id)
                 self.goals += 1
                 if aircraft not in aircraft_to_remove:
                     aircraft_to_remove.append(aircraft)
@@ -341,6 +296,7 @@ class MultiAircraftEnv(gym.Env):
         # vertiport_map_img.add_attr(jtransform)
         # self.viewer.onetime_geoms.append(vertiport_map_img)
 
+        # draw all aircraft
         for id, aircraft in self.aircraft_dict.ac_dict.items():
             aircraft_img = rendering.Image(os.path.join(__location__, 'images/aircraft.png'), 32, 32)
             jtransform = rendering.Transform(rotation=aircraft.heading - math.pi / 2, translation=aircraft.position)
@@ -355,12 +311,14 @@ class MultiAircraftEnv(gym.Env):
             goal_img.set_color(r, g, b)
             self.viewer.onetime_geoms.append(goal_img)
 
+        # draw all vertiports
         for veriport in self.vertiport_list:
             vertiport_img = rendering.Image(os.path.join(__location__, 'images/verti.png'), 32, 32)
             jtransform = rendering.Transform(rotation=0, translation=veriport.position)
             vertiport_img.add_attr(jtransform)
             self.viewer.onetime_geoms.append(vertiport_img)
 
+        # draw all sectors
         for sector in self.sectors:
             if sector.id == 0:
                 for i, exit in enumerate(sector.exits):
@@ -377,12 +335,9 @@ class MultiAircraftEnv(gym.Env):
                     jtransform = rendering.Transform(rotation=math.radians(angle), translation=exit[0])
                     exit_img.add_attr(jtransform)
                     exit_img.set_color(255 / 255.0, 165 / 255.0, 0)
-                    # if i % 2 == 0:
-                    #     exit_img.set_color(255 / 255.0, 192 / 255.0, 203 / 255.0)  # pick
-                    # else:
-                    #     exit_img.set_color(255 / 255.0, 165 / 255.0, 0)  # yellow
                     self.viewer.onetime_geoms.append(exit_img)
 
+        # draw boundaries of the sectors
         self.viewer.draw_polyline(Config.vertiport_loc[[1, 2, 3, 4, 5, 6, 1], :])
         for sector in self.sectors:
             self.viewer.draw_polyline(sector.vertices[[0, 1, 2, 3, 4, 5, 0], :])
@@ -427,10 +382,6 @@ class MultiAircraftEnv(gym.Env):
                     jtransform = rendering.Transform(rotation=math.radians(angle), translation=exit[0])
                     exit_img.add_attr(jtransform)
                     exit_img.set_color(255 / 255.0, 165 / 255.0, 0)
-                    # if i % 2 == 0:
-                    #     exit_img.set_color(255 / 255.0, 192 / 255.0, 203 / 255.0)  # pick
-                    # else:
-                    #     exit_img.set_color(255 / 255.0, 165 / 255.0, 0)  # yellow
                     self.viewer.onetime_geoms.append(exit_img)
 
         self.viewer.draw_polyline(Config.vertiport_loc[[1, 2, 3, 4, 5, 6, 1], :])
@@ -445,6 +396,7 @@ class MultiAircraftEnv(gym.Env):
             self.viewer = None
 
     def dist_to_all_aircraft(self, aircraft):
+        # calculate dist of aircraft to all of the other aircraft
         id_list = []
         dist_list = []
         for id, intruder in self.aircraft_dict.ac_dict.items():
@@ -493,37 +445,6 @@ class MultiAircraftEnv(gym.Env):
         return spaces.Tuple((s,) * self.num_aircraft)
 
 
-class AircraftDict:
-    def __init__(self):
-        self.ac_dict = OrderedDict()
-
-    @property
-    def num_aircraft(self):
-        return len(self.ac_dict)
-
-    def add(self, aircraft):
-        assert aircraft.id not in self.ac_dict.keys(), 'aircraft id %d already in dict' % aircraft.id
-        self.ac_dict[aircraft.id] = aircraft
-
-    def remove(self, aircraft):
-        try:
-            del self.ac_dict[aircraft.id]
-        except KeyError:
-            pass
-
-    def get_aircraft_by_id(self, aircraft_id):
-        return self.ac_dict[aircraft_id]
-
-
-class Goal:
-    def __init__(self, position):
-        self.position = position
-
-    def __repr__(self):
-        s = 'pos: %s' % self.position
-        return s
-
-
 class Aircraft:
     def __init__(self, id, position, speed, heading, goal_pos, goal_vertiport_id, sector_id=-1):
         self.id = id
@@ -543,7 +464,7 @@ class Aircraft:
 
         self.load_config()
 
-        self.conflict_id_set = set()
+        self.conflict_id_set = set()  # track id of the aircraft in conflict
 
         self.sector_id = sector_id
 
@@ -553,7 +474,6 @@ class Aircraft:
         self.min_speed = Config.min_speed
         self.max_speed = Config.max_speed
         self.speed_sigma = Config.speed_sigma
-        # self.position_sigma = Config.position_sigma
         self.d_heading = Config.d_heading
 
     def step(self, a=1):
@@ -579,6 +499,43 @@ class Aircraft:
                self.sub_goal.position[1]
                )
         return s
+
+
+class Goal:
+    def __init__(self, position):
+        self.position = position
+
+    def __repr__(self):
+        s = 'pos: %s' % self.position
+        return s
+
+
+class AircraftDict:
+    # all of the aircraft object is stored in this class
+    def __init__(self):
+        self.ac_dict = OrderedDict()
+
+    # how many aircraft currently en route
+    @property
+    def num_aircraft(self):
+        return len(self.ac_dict)
+
+    # add aircraft to dict
+    def add(self, aircraft):
+        # id should always be different
+        assert aircraft.id not in self.ac_dict.keys(), 'aircraft id %d already in dict' % aircraft.id
+        self.ac_dict[aircraft.id] = aircraft
+
+    # remove aircraft from dict
+    def remove(self, aircraft):
+        try:
+            del self.ac_dict[aircraft.id]
+        except KeyError:
+            pass
+
+    # get aircraft by its id
+    def get_aircraft_by_id(self, aircraft_id):
+        return self.ac_dict[aircraft_id]
 
 
 class VertiPort:
@@ -611,10 +568,10 @@ class Sector:
         self.set_gate()
 
     def set_gate(self):
+        # set the position of the gates of each sector
         from shapely.geometry import LineString
         if self.id == 0:
             self.exits = []
-            # self.entries = []
 
             for i in range(6):
                 start = self.vertices[i - 1]
@@ -629,15 +586,8 @@ class Sector:
                                             [points[0].x + Config.sector_exit_len * math.cos(angle),
                                              points[0].y + Config.sector_exit_len * math.sin(angle)]]))
 
-                # self.entries.append(np.array([points[1].x, points[1].y]))
-
         else:
-
             self.exits = []
-            # self.entries = []
-
-            # print('===========================')
-            # print('id:', self.id)
             for i in range(self.id + 1, self.id + 4):
                 v1 = i
                 v2 = i + 1
@@ -653,17 +603,10 @@ class Sector:
                                             [points[0].x + Config.sector_exit_len * math.cos(angle),
                                              points[0].y + Config.sector_exit_len * math.sin(angle)]]))
 
-                # self.entries.append(np.array([points[1].x, points[1].y]))
-
         self.exits = np.array(self.exits)
-        # self.entries = np.array(self.entries)
-
-        # print('=========================')
-        # print('sector id:', self.id)
-        # print('entries:')
-        # print(repr(self.entries))
 
     def assign_exit(self, aircraft):
+        # when aircraft enters this aircraft, assign an exit gate to it
         if self.in_sector(aircraft.goal.position):
             aircraft.sub_goal = Goal(aircraft.goal.position)
             aircraft.goal_exit_id = -1
@@ -705,20 +648,6 @@ class Sector:
         s = 'id: %d' \
             % (self.id)
         return s
-
-    # def inSector(self, p):
-    #     return self.PointInTriangle(p, self.v1, self.v2, self.v3)
-    #
-    # def sign(self, p1, p2, p3):
-    #     return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-    #
-    # def PointInTriangle(self, pt, v1, v2, v3):
-    #     b1 = self.sign(pt, v1, v2) <= 0
-    #     b2 = self.sign(pt, v2, v3) <= 0
-    #     b3 = self.sign(pt, v3, v1) <= 0
-    #
-    #     return (b1 == b2) and (b2 == b3)
-
 
 def dist(x1, y1, x2, y2):
     dx = x1 - x2
