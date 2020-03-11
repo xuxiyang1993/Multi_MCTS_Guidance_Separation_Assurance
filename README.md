@@ -69,7 +69,7 @@ The simulator code is under the directory of `simulators/`. The following descri
 * `render()` will visualize all of the current aircraft and vertiport.
 
 ## Citing this work
-If you find this codebase useful for your research work, we encourage you to cite the software using the following BibTex citation:
+If you find this codebase useful for your research work, we encourage you to cite our paper using the following BibTex citation:
 
 ```
 @article{yang2020scalable,
