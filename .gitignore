@@ -1,4 +1,4 @@
 .idea/
+MCTS/output/
 *.pyc
-*.txt
 *.DS_Store
