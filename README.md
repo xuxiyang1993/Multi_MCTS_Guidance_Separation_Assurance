@@ -1,8 +1,8 @@
-# Multi Agent Autonomous On-Demand Free Flight Operations in Urban Air Mobility using Monte Carlo Tree Search
+# Multi_MCTS_Guidance_Separation_Assurance
 
 A Python implementation of the algorithm proposed in paper "Multi Agent Autonomous On-Demand Free Flight Operations in Urban Air Mobility using Monte Carlo Tree Search"
 
-A short video demo of this algorithm: https://www.youtube.com/watch?v=Q6AkCCt-9nI&t=
+A short video demo of this algorithm: https://www.youtube.com/watch?v=2cbRUig4G_I&t=
 
 ## Requirements
 
