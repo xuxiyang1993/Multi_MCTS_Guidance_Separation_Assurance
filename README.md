@@ -4,13 +4,13 @@ A Python implementation of the algorithm proposed in the paper "Scalable Multi-A
 
 A short video demo of this algorithm: https://www.youtube.com/watch?v=2cbRUig4G_I&t=
 
-## Requirements
+## Install
 
-* python 3.6
-* numpy
-* gym
-* collections
-* shapely
+This repository is only testesd under Python 3.6. To install the dependent packages, run
+
+```
+pip install -r requirements.txt
+```
 
 
 ## Optional arguments
