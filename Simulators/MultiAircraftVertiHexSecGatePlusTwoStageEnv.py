@@ -52,12 +52,9 @@ class MultiAircraftEnv(gym.Env):
 
         self.debug = debug
 
+        # route flight time for low priority aircraft (0) and high priority aircraft (1) for route option 1, 2, 3
         self.route_time = {0: {1: [], 2: [], 3: []},
                            1: {1: [], 2: [], 3: []}}
-        self.route_conflicts = {0: {1: 0, 2: 0, 3: 0},
-                                1: {1: 0, 2: 0, 3: 0}}
-        self.route_NMACs = {0: {1: 0, 2: 0, 3: 0},
-                            1: {1: 0, 2: 0, 3: 0}}
 
     def seed(self, seed=None):
         np.random.seed(seed)
@@ -105,40 +102,19 @@ class MultiAircraftEnv(gym.Env):
 
         return self._get_ob()
 
-    def pressure_reset(self):
-        self.conflicts = 0
-        # aircraft is stored in this list
-        self.aircraft_list = []
-
-        for id in range(self.num_aircraft):
-            theta = 2 * id * math.pi / self.num_aircraft
-            r = self.window_width / 2 - 10
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
-            position = (self.window_width / 2 + x, self.window_height / 2 + y)
-            goal_pos = (self.window_width / 2 - x, self.window_height / 2 - y)
-
-            aircraft = Aircraft(
-                id=id,
-                position=position,
-                speed=self.init_speed,
-                heading=theta + math.pi,
-                goal_pos=goal_pos
-            )
-
-            self.aircraft_list.append(aircraft)
-
-        return self._get_ob()
-
     def _get_ob(self):
-        ob = {}  # key: sector, item: [aircraft_info, id]
+        ob = {}  # dictionary: {sector_id: [aircraft_info, id]}
+        # for all sectors
         for i in range(7):
+            # high priority information
             s_high = []
             id_high = []
             goal_exit_id_high = []
+            # all aircraft information
             s = []
             id = []
             goal_exit_id = []
+            # aircraft information that are close to sector
             s_high_out = []
             s_out = []
             for aircraft_id in self.sectors[i].controlled_aircraft_id:
@@ -208,7 +184,7 @@ class MultiAircraftEnv(gym.Env):
         return ob
 
     def step(self, a, near_end=False):
-        # a is a dictionary: {id, action, ...}
+        # a is a dictionary: {id: action, ...}
         for id, aircraft in self.aircraft_dict.ac_dict.items():
             try:
                 aircraft.step(a[id])
@@ -259,6 +235,9 @@ class MultiAircraftEnv(gym.Env):
         return self._get_ob(), reward, terminal, info
 
     def assign_sector(self):
+        """
+        based on the aircraft location, change its sector id to the current sector
+        """
         for id, aircraft in self.aircraft_dict.ac_dict.items():
             for sector in self.sectors:
                 if sector.in_sector(aircraft.position):
@@ -286,7 +265,6 @@ class MultiAircraftEnv(gym.Env):
            else return the corresponding reward and not terminate
         """
         reward = 0
-        # info = {'n': [], 'c': [], 'w': [], 'g': []}
         info_dist_dict = {}
         aircraft_to_remove = []  # add goal-aircraft and out-of-map aircraft to this list
 
@@ -313,8 +291,6 @@ class MultiAircraftEnv(gym.Env):
                     if id2 not in aircraft.conflict_id_set:
                         self.conflicts += 1
                         aircraft.conflict_id_set.add(id2)
-                        self.route_conflicts[aircraft.priority][aircraft.route] += 1
-                        # info['c'].append('%d and %d' % (aircraft.id, id))
                     aircraft.reward = Config.conflict_penalty
 
             # if NMAC, set penalty reward and prepare to remove the aircraft from list
@@ -323,11 +299,9 @@ class MultiAircraftEnv(gym.Env):
                     self.render()
                     import ipdb
                     ipdb.set_trace()
-                # info['n'].append('%d and %d' % (aircraft.id, close_id))
                 aircraft.reward = Config.NMAC_penalty
                 aircraft_to_remove.append(aircraft)
                 self.NMACs += 1
-                self.route_NMACs[aircraft.priority][aircraft.route] += 1
                 # aircraft_to_remove.append(self.aircraft_dict.get_aircraft_by_id(close_id))
 
             # give out-of-map aircraft a penalty, and prepare to remove it
@@ -466,10 +440,6 @@ class MultiAircraftEnv(gym.Env):
                     jtransform = rendering.Transform(rotation=math.radians(angle), translation=exit[0])
                     exit_img.add_attr(jtransform)
                     exit_img.set_color(255 / 255.0, 165 / 255.0, 0)
-                    # if i % 2 == 0:
-                    #     exit_img.set_color(255 / 255.0, 192 / 255.0, 203 / 255.0)  # pick
-                    # else:
-                    #     exit_img.set_color(255 / 255.0, 165 / 255.0, 0)  # yellow
                     self.viewer.onetime_geoms.append(exit_img)
 
         self.viewer.draw_polyline(Config.vertiport_loc[[1, 2, 3, 4, 5, 6, 1], :])
@@ -530,37 +500,6 @@ class MultiAircraftEnv(gym.Env):
         })
 
         return spaces.Tuple((s,) * self.num_aircraft)
-
-
-class AircraftDict:
-    def __init__(self):
-        self.ac_dict = OrderedDict()
-
-    @property
-    def num_aircraft(self):
-        return len(self.ac_dict)
-
-    def add(self, aircraft):
-        assert aircraft.id not in self.ac_dict.keys(), 'aircraft id %d already in dict' % aircraft.id
-        self.ac_dict[aircraft.id] = aircraft
-
-    def remove(self, aircraft):
-        try:
-            del self.ac_dict[aircraft.id]
-        except KeyError:
-            pass
-
-    def get_aircraft_by_id(self, aircraft_id):
-        return self.ac_dict[aircraft_id]
-
-
-class Goal:
-    def __init__(self, position):
-        self.position = position
-
-    def __repr__(self):
-        s = 'pos: %s' % self.position
-        return s
 
 
 class Aircraft:
@@ -625,6 +564,43 @@ class Aircraft:
         return s
 
 
+class Goal:
+    def __init__(self, position):
+        self.position = position
+
+    def __repr__(self):
+        s = 'pos: %s' % self.position
+        return s
+
+
+class AircraftDict:
+    # all of the aircraft object is stored in this class
+    def __init__(self):
+        self.ac_dict = OrderedDict()
+
+    # how many aircraft currently en route
+    @property
+    def num_aircraft(self):
+        return len(self.ac_dict)
+
+    # add aircraft to dict
+    def add(self, aircraft):
+        # id should always be different
+        assert aircraft.id not in self.ac_dict.keys(), 'aircraft id %d already in dict' % aircraft.id
+        self.ac_dict[aircraft.id] = aircraft
+
+    # remove aircraft from dict
+    def remove(self, aircraft):
+        try:
+            del self.ac_dict[aircraft.id]
+        except KeyError:
+            pass
+
+    # get aircraft by its id
+    def get_aircraft_by_id(self, aircraft_id):
+        return self.ac_dict[aircraft_id]
+
+
 class VertiPort:
     def __init__(self, id, position):
         self.id = id
@@ -655,6 +631,7 @@ class Sector:
         self.set_gate()
 
     def set_gate(self):
+        # set the position of the gates of each sector
         from shapely.geometry import LineString
         if self.id == 0:
             self.exits = []

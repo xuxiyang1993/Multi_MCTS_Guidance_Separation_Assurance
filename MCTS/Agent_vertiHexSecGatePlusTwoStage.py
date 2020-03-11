@@ -48,8 +48,6 @@ def run_experiment(env, no_episodes, render, save_path):
                     ob_in, id, goal_exit_id, ob_out = last_observation[i]
 
                     time_before = int(round(time.time() * 1000))
-                    # import datetime
-                    # start = datetime.datetime.now()
 
                     # make decision for high priority aircraft
                     # ----------------------------------------
@@ -106,8 +104,6 @@ def run_experiment(env, no_episodes, render, save_path):
 
                     # decision making end
 
-                    # print("[INFO] {} aircraft took: {}ms".format(num_considered_aircraft,
-                    #                                              (datetime.datetime.now() - start).total_seconds()*1000))
                     time_after = int(round(time.time() * 1000))
                     if num_considered_aircraft in time_dict:
                         time_dict[num_considered_aircraft].append(time_after - time_before)
@@ -145,14 +141,6 @@ def run_experiment(env, no_episodes, render, save_path):
                 print('Low  Priority Route Time:',
                       np.array([np.mean(env.route_time[0][1]), np.mean(env.route_time[0][2]),
                                 np.mean(env.route_time[0][3])]))
-                print('High Priority Route conflicts:',
-                      np.array([env.route_conflicts[1][1], env.route_conflicts[1][2], env.route_conflicts[1][3]]))
-                print('Low Priority Route conflicts:',
-                      np.array([env.route_conflicts[0][1], env.route_conflicts[0][2], env.route_conflicts[0][3]]))
-                print('High Priority Route NMACs:',
-                      np.array([env.route_NMACs[1][1], env.route_NMACs[1][2], env.route_NMACs[1][3]]))
-                print('Low Priority Route NMACs:',
-                      np.array([env.route_NMACs[0][1], env.route_NMACs[0][2], env.route_NMACs[0][3]]))
 
             if env.id_tracker - 1 >= 10000:
                 counter += 1
