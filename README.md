@@ -1,6 +1,6 @@
 # Multi_MCTS_Guidance_Separation_Assurance
 
-A Python implementation of the algorithm proposed in paper "Multi Agent Autonomous On-Demand Free Flight Operations in Urban Air Mobility using Monte Carlo Tree Search"
+A Python implementation of the algorithm proposed in paper "Scalable Multi-Agent Computational Guidance with Separation Assurance for Autonomous Urban Air Mobility Operations" by [Xuxi Yang](https://xuxiyang1993.github.io/) and [Peng Wei](https://web.seas.gwu.edu/pwei/).
 
 A short video demo of this algorithm: https://www.youtube.com/watch?v=2cbRUig4G_I&t=
 
