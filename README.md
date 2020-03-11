@@ -6,7 +6,7 @@ A short video demo of this algorithm: https://www.youtube.com/watch?v=2cbRUig4G_
 
 ## Install
 
-This repository is only testesd under Python 3.6. To install the dependent packages, run
+This repository is only testesd under Python 3.6. To install the dependencies, run
 
 ```
 pip install -r requirements.txt
