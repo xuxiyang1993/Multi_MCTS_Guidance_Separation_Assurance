@@ -83,6 +83,6 @@ If you find this codebase useful for your research work, we encourage you to cit
 
 ### Note
 
-I just finished cleanup this repository and silend bugs may exist. If you have any comments, questions, or suggestions, feel free to let me know!
+I just finished hte cleanup of this repository and silent bugs may exist. If you have any comments, questions, or suggestions, feel free to let me know!
 
 Email: xuxiyang@iastate.edu
