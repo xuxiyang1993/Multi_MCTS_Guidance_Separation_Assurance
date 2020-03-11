@@ -3,12 +3,12 @@ import numpy as np
 import time
 
 import sys
+
 sys.path.extend(['../Simulators'])
 from nodesHexSecGatePlus import MultiAircraftNode, MultiAircraftState
 from search_multi import MCTS
 from config_hex_sec import Config
 from MultiAircraftVertiHexSecGatePlusEnv import MultiAircraftEnv
-# from testEnv import MultiAircraftEnv
 
 
 def run_experiment(env, no_episodes, render, save_path):
@@ -33,7 +33,7 @@ def run_experiment(env, no_episodes, render, save_path):
         action_by_id = {}
         info = None
         near_end = False
-        counter = 0  # avoid end episode initially
+        counter = 0
 
         while not done:
             if render:
@@ -47,8 +47,7 @@ def run_experiment(env, no_episodes, render, save_path):
 
                     ob_by_sector, id_list, goal_exit_id_list = last_observation[i]
                     time_before = int(round(time.time() * 1000))
-                    # import datetime
-                    # start = datetime.datetime.now()
+
                     num_considered_aircraft = len(id_list)
                     num_existing_aircraft = ob_by_sector.shape[0]
                     # if not num_considered_aircraft == num_existing_aircraft:
@@ -75,13 +74,7 @@ def run_experiment(env, no_episodes, render, save_path):
                         action[index] = best_node.state.prev_action[index]
                         action_by_id[id_list[index]] = best_node.state.prev_action[index]
 
-                    # print("[INFO] {} aircraft took: {}ms".format(num_considered_aircraft,
-                    #                                              (datetime.datetime.now() - start).total_seconds()*1000))
                     time_after = int(round(time.time() * 1000))
-                    # if num_considered_aircraft in time_dict:
-                    #     time_dict[num_considered_aircraft].append(time_after - time_before)
-                    # else:
-                    #     time_dict[num_considered_aircraft] = [time_after - time_before]
 
                     time_list.append(time_after - time_before)
 
