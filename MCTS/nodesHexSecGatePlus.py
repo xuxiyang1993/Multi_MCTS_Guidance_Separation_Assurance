@@ -64,18 +64,6 @@ class MultiAircraftState(MCTSState):
                 r = 1
         return r
 
-    # def reward(self):
-    #     if self.conflict:
-    #         r = 0
-    #     elif self.reach_goal:
-    #         r = 1
-    #     else:
-    #         r = 1 - self.dist_goal() / 1200.0 + 2 * self.dist_intruder(self.state, self.ownx, self.owny) / 1200
-    #         r /= 2
-    #     if self.hit_wall:
-    #         r -= 0.2
-    #     return r
-
     def is_terminal_state(self, search_depth):
         if self.reach_goal or self.conflict or self.hit_wall or self.depth == search_depth:
             return True
@@ -106,7 +94,7 @@ class MultiAircraftState(MCTSState):
                 heading = state[index, 5] + (a[index] - 1) * Config.d_heading \
                           + np.random.normal(0, Config.heading_sigma)
                 speed = Config.init_speed + np.random.normal(0, Config.speed_sigma)
-                speed = max(Config.min_speed, min(speed, Config.max_speed))  # project to range
+                speed = max(Config.min_speed, min(speed, Config.max_speed))  # restrict to range
                 vx = speed * math.cos(heading)
                 vy = speed * math.sin(heading)
                 state[index, 0] += vx
@@ -127,14 +115,12 @@ class MultiAircraftState(MCTSState):
                 conflict = True
                 break
 
+            # if not sub goal and aircraft reaches goal
             if self.goal_exit_id == -1 and self.metric(ownx, owny, goalx, goaly) < Config.goal_radius:
                 reach_goal = True
                 break
 
-            # if not self.goal_exit_id == -1 and \
-            #         self.point_to_line_dist(np.array([ownx, owny]),
-            #                                 [Config.sector_len_exits[self.sector_id][self.goal_exit_id][1],
-            #                                  Config.sector_len_exits[self.sector_id][self.goal_exit_id][2]]) < 4:
+            # if aircraft close to sector exit gate, sub_goal = True
             if not self.goal_exit_id == -1 and \
                 pnt2line(np.array([ownx, owny]),
                          Config.sector_len_exits[self.sector_id][self.goal_exit_id][1],
