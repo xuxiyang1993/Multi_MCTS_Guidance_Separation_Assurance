@@ -19,7 +19,6 @@ def run_experiment(env, no_episodes, render, save_path):
     enroute_number_list = []
     num_aircraft = Config.num_aircraft
     time_dict = {}
-    route_time = {1: [], 2: [], 3: []}
 
     while episode < no_episodes:
         # at the beginning of each episode, set done to False, set time step in this episode to 0
