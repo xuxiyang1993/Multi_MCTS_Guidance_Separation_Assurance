@@ -15,41 +15,48 @@ A short video demo of this algorithm: https://www.youtube.com/watch?v=2cbRUig4G_
 
 ## Optional arguments
 
-
 `--save_path` the path where you want to save the output
 
 `--seed` seed of the experiment
 
 `--render` if render the env while running exp
 
+`--debug` set to True if you want to debug the algorithm (the code will stop running and render the current state)
 
-## MCTS Algorithm
+## Running the algorithm
+
+Three case studies can be run in thie repository.
+
+For case study 1 in the paper, run
+
+`python Agent_vertiHexSecGatePlus.py`
+
+For case study 2, run
+
+`python Agent_vertiHexSecGatePlusTwoStage.py`
+
+For case study 3, run
+
+`python Agent_vertiport.py`
+
+
+## MCTS algorithm
 The code MCTS algorithm is under the directory `MCTS/`
 
 `common.py` defines the general MCTS node class and state class
 
-`nodes*.py` defines the MCTS node class and state class specifically for Multi Agent Aircraft Guidance proble, e.g., given current aircraft state and current action, how to decided the next aircraft state
+`nodes*.py` defines the MCTS node class and state class specifically for Multi Agent Aircraft Guidance proble, e.g., given current aircraft state and current action, how to decide the next aircraft state
 
 `search_multi.py` describes the search process of MCTS algorithm
 
-## A2C Algorithm
-To run the Multi-agent A2C algorithm, run the following code
-
-```
-cd A2C
-python A2C.py --train
-```
-
-The `A2C_Agent.py` defines the agent that makes decisions where a neural network model is defined. Note this algorithm is not working properly. Also the reward function needs to be tuned in config file line 54 https://github.com/xuxiyang1993/Multiagent_collision_avoidance/blob/master/Simulators/config_vertiport.py
-
 ## Simulator
-The simulator code is `MultiAircraftVertiportEnv.py`. The following described the main function in this simulator.
+The simulator code is under the directory of `simulators/`. The following described the main function in simulators.
 
-`config_vertiport.py` defines the configurable parameters of the simulator. For example, airspace width/length, number of aircraft, scale (1 pixel = how many meters), conflict/NMAC distance, cruise/max speed of aircraft, heading angle change rate of aircraft, number simulations and search depth of MCTS algorithm, vertiport location, ...
+`config*.py` defines the configurable parameters of the simulator. For example, airspace width/length, number of aircraft, scale (1 pixel = how many meters), conflict/NMAC distance, cruise/max speed of aircraft, heading angle change rate of aircraft, number simulations and search depth of MCTS algorithm, vertiport location, ...
 
-* `__init__()` initilize the simulator by generating vertiports, centralized controller, loading configuration parameters, generating aircraft.
+* `__init__()` initilize the simulator by generating vertiports, sectors, loading configuration parameters, and generating aircraft.
 
-* `reset()` will reset the number of conflicts/NMACs to 0 and reset the aircraft dictionary. Note here all the aircraft objects are stored in the `AircraftDict` class, where we can add/remove aircraft from it, and get aircraft object by id.
+* `reset()` will reset the number of conflicts/NMACs to 0 and reset the aircraft dictionary. Note here all the aircraft objects are stored in the `AircraftDict` class, where you can add/remove aircraft from it, and get aircraft object by id.
 
 * `_get_ob()` will return the current state, which is n by 8 matrix, where n is the number of aircraft. Each aircraft has (x, y, vx, vy, speed, heading, gx, gy) state information.
 
@@ -59,10 +66,10 @@ The simulator code is `MultiAircraftVertiportEnv.py`. The following described th
 
 * `_terminal_reward()` will return the reward function for current state. This function will check if there is any conflict/NMAC between any two aircraft and update conflict/NMAC number. It will also remove aircraft that reaches goal position and aircraft pair that has NMAC.
 
-* `render()` will visualize all of the current aircraft and vertiport. I used this to generate the demo video.
+* `render()` will visualize all of the current aircraft and vertiport.
 
 ## Citing this work
-If you use this codebase for published work, we encourage you to cite the software using the following BibTex citation:
+If you find this codebase useful for your research work, we encourage you to cite the software using the following BibTex citation:
 
 ```
 @article{yang2020scalable,
