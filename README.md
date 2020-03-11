@@ -81,7 +81,8 @@ If you find this codebase useful for your research work, we encourage you to cit
 }
 ```
 
+### Note
 
-If you have any questions or comments, don't hesitate to send me an email! I am looking for ways to make this code even more computationally efficient.
+I just finished cleanup this repository and silend bugs may exist. If you have any comments, questions, or suggestions, feel free to let me know!
 
 Email: xuxiyang@iastate.edu
