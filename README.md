@@ -12,7 +12,6 @@ A short video demo of this algorithm: https://www.youtube.com/watch?v=Q6AkCCt-9n
 * collections
 * tensorflow == 2.0
 * keras
-* ...
 
 
 ## Getting Started
