@@ -10,19 +10,11 @@ A short video demo of this algorithm: https://www.youtube.com/watch?v=2cbRUig4G_
 * numpy
 * gym
 * collections
-* tensorflow == 2.0
-* keras
+* shapely
 
 
-## Getting Started
+## Optional arguments
 
-Make sure that you have the above requirements taken care of, then download all the files. You can run it using
-
-```
-python Agent_vertiport.py
-```
-
-Optional arguments:
 
 `--save_path` the path where you want to save the output
 
@@ -68,6 +60,19 @@ The simulator code is `MultiAircraftVertiportEnv.py`. The following described th
 * `_terminal_reward()` will return the reward function for current state. This function will check if there is any conflict/NMAC between any two aircraft and update conflict/NMAC number. It will also remove aircraft that reaches goal position and aircraft pair that has NMAC.
 
 * `render()` will visualize all of the current aircraft and vertiport. I used this to generate the demo video.
+
+## Citing this work
+If you use this codebase for published work, we encourage you to cite the software using the following BibTex citation:
+
+```
+@article{yang2020scalable,
+  title={Scalable Multi-Agent Computational Guidance with Separation Assurance for Autonomous Urban Air Mobility Operations},
+  author={Yang, Xuxi and Wei, Peng},
+  journal={Journal of Guidance, Control, and Dynamics},
+  year={2020},
+  publisher={American Institute of Aeronautics and Astronautics}
+}
+```
 
 
 If you have any questions or comments, don't hesitate to send me an email! I am looking for ways to make this code even more computationally efficient.
