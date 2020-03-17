@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 `--render` if render the env while running exp
 
-`--debug` set to True if you want to debug the algorithm (the code will stop running and render the current state)
+`--debug` set to True if you want to debug the algorithm (the code will stop running and render the current state when there is conflict/LOS or NMAC, check this [line](https://github.com/xuxiyang1993/Multi_MCTS_Guidance_Separation_Assurance/blob/master/Simulators/MultiAircraftVertiHexSecGatePlusEnv.py#L231) for detail)
 
 ## Running the algorithm
 
