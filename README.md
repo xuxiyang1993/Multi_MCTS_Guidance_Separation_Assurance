@@ -41,7 +41,7 @@ For case study 3, run
 
 
 ## MCTS algorithm
-The code MCTS algorithm is under the directory `MCTS/`
+The MCTS algorithm code is under the directory `MCTS/`
 
 `common.py` defines the general MCTS node class and state class
 
@@ -60,7 +60,7 @@ The simulator code is under the directory of `simulators/`. The following descri
 
 * `_get_ob()` will return the current state, which is n by 8 matrix, where n is the number of aircraft. Each aircraft has (x, y, vx, vy, speed, heading, gx, gy) state information.
 
-* `_get_normalized_ob()` will normalize the state to be in range [0, 1], which will be useful if we want to feed state into a neural network.
+* `_get_normalized_ob()` will normalize the state to be in range [0, 1], which will be useful if you want to feed state into a neural network.
 
 * `step()` will return next state, reward, terminal, info given current state and current action. Each aircraft will fly according to the given action. We have a clock at each vertiport to decide whether to generate new flight request/aircraft.
 
