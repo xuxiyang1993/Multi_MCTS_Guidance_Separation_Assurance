@@ -1,4 +1,4 @@
-# Multi_MCTS_Guidance_Separation_Assurance
+# Multi-aircraft Guidance and Separation Assurance
 
 A Python implementation of the algorithm proposed in the paper "Scalable Multi-Agent Computational Guidance with Separation Assurance for Autonomous Urban Air Mobility Operations" by [Xuxi Yang](https://xuxiyang1993.github.io/) and [Peng Wei](https://web.seas.gwu.edu/pwei/).
 
