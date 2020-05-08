@@ -73,7 +73,7 @@ If you find this codebase useful for your research work, we encourage you to cit
 
 ```
 @article{yang2020scalable,
-  title={Scalable Multi-Agent Computational Guidance with Separation Assurance for Autonomous Urban Air Mobility Operations},
+  title={Scalable Multi-Agent Computational Guidance with Separation Assurance for Autonomous Urban Air Mobility},
   author={Yang, Xuxi and Wei, Peng},
   journal={Journal of Guidance, Control, and Dynamics},
   year={2020},
