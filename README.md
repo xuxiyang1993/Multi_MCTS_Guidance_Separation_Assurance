@@ -77,7 +77,8 @@ If you find this codebase useful for your research work, we encourage you to cit
   author={Yang, Xuxi and Wei, Peng},
   journal={Journal of Guidance, Control, and Dynamics},
   year={2020},
-  publisher={American Institute of Aeronautics and Astronautics}
+  publisher={American Institute of Aeronautics and Astronautics},
+  doi = {10.2514/1.G005000}
 }
 ```
 
