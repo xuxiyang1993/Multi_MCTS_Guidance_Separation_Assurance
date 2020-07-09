@@ -76,9 +76,12 @@ If you find this codebase useful for your research work, we encourage you to cit
   title={Scalable Multi-Agent Computational Guidance with Separation Assurance for Autonomous Urban Air Mobility},
   author={Yang, Xuxi and Wei, Peng},
   journal={Journal of Guidance, Control, and Dynamics},
+  volume = {43},
+  number = {8},
+  pages = {1473-1486},
   year={2020},
   publisher={American Institute of Aeronautics and Astronautics},
-  doi = {10.2514/1.G005000}
+  doi = {10.2514/1.G005000},
 }
 ```
 
