@@ -2,7 +2,9 @@
 
 A Python implementation of the algorithm proposed in the paper "Scalable Multi-Agent Computational Guidance with Separation Assurance for Autonomous Urban Air Mobility Operations" by [Xuxi Yang](https://xuxiyang1993.github.io/) and [Peng Wei](https://web.seas.gwu.edu/pwei/).
 
-A short video demo of this algorithm: https://www.youtube.com/watch?v=2cbRUig4G_I&t=
+Paper [link](https://arc.aiaa.org/doi/pdf/10.2514/1.G005000?casa_token=8hne9A6_jLsAAAAA:or3qJQKhTnqIcKcKaXgws9thg__BOG31IXL0OUDdCdx7CTdjN5PVmcwzx18-HJemO0qHxtoudvE)
+
+Video [demo](https://www.youtube.com/watch?v=2cbRUig4G_I&t=)
 
 ## Install
 
@@ -87,6 +89,6 @@ If you find this codebase useful for your research work, we encourage you to cit
 
 ### Note
 
-I just finished hte cleanup of this repository and silent bugs may exist. If you have any comments, questions, or suggestions, feel free to let me know!
+If you have any comments, questions, or suggestions, feel free to let me know!
 
-Email: xuxiyang@iastate.edu
+Email: xuxiyang1993@gmail.com
